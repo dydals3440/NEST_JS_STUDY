@@ -19,6 +19,7 @@ import {
 } from "./common/const/env-keys.const";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { PUBLIC_FOLDER_PATH } from "./common/const/path.const";
+import { ImageModel } from "./common/entity/image.entity";
 
 @Module({
     // 다른 모듈을 불러올 떄 사용
@@ -48,7 +49,7 @@ import { PUBLIC_FOLDER_PATH } from "./common/const/path.const";
             username: process.env[ENV_DB_USERNAME_KEY],
             password: process.env[ENV_DB_PASSWORD_KEY],
             database: process.env[ENV_DB_DATABASE_KEY],
-            entities: [PostsModel, UsersModel],
+            entities: [PostsModel, UsersModel, ImageModel],
             // nestjs에서 작성하는 typeorm코드와 DB 싱크를 자동으로 맞출꺼나.(개발환경에서는 true / production 환경에서는 마음대로 바뀔 수 있기에 false로 자동싱크맞추기 안하게)
             synchronize: true,
         }),

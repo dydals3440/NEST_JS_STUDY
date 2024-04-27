@@ -69,6 +69,8 @@ export class PostsController {
     //
     // transaction
     // start -> 시작
+    // commit -> 저장
+    // rollback -> 원상복구
     @Post()
     @UseGuards(AccessTokenGuard)
     async postPost(@User("id") userId: number, @Body() body: CreatePostDto) {
