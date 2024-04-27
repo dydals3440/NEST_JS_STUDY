@@ -22,10 +22,12 @@ import { CreatePostDto } from "./dto/create-post.dto";
 import { UpdatePostDto } from "./dto/update-post.dto";
 import { PaginatePostDto } from "./dto/paginate-post.dto";
 import { UsersModel } from "src/users/entities/users.entity";
-import { FileInterceptor } from "@nestjs/platform-express";
+
 import { ImageModelType } from "src/common/entity/image.entity";
-import { DataSource } from "typeorm";
+import { DataSource, QueryRunner as QR } from "typeorm";
 import { LogInterceptor } from "src/common/interceptor/log.interceptor";
+import { TransactionInterceptor } from "src/common/interceptor/transaction.interceptor";
+import { QueryRunner } from "src/common/decorator/query-runner.decorator";
 
 // Controller Annotation
 @Controller("posts")
@@ -84,54 +86,28 @@ export class PostsController {
     // rollback -> 원상복구
     @Post()
     @UseGuards(AccessTokenGuard)
-    async postPost(@User("id") userId: number, @Body() body: CreatePostDto) {
-        // 트랜잭션과 관련된 모든 쿼리를 담당할 쿼리러너 생성.
-        // 쿼리러너를 실행해줘야지 트랜잭션에 묶이기 떄문에 service(createpost에 가서 qr을 인자로 받아서, 실행 처리 해주어야함.)
-        const qr = this.dataSource.createQueryRunner();
+    @UseInterceptors(TransactionInterceptor)
+    async postPost(@User("id") userId: number, @Body() body: CreatePostDto, @QueryRunner() qr: QR) {
+        // temp -> posts로 옮긴다음에 포스팅
+        const post = await this.postsService.createPost(userId, body, qr);
+        // throw new InternalServerErrorException("에러가 생겼습니다.");
+        // 포스트만 생성하고, 이미지는 생성안해버림 throw 에러에서 걸림. 원래는 포스트 게시글이 생기면 안됨.
 
-        // 쿼리 러너에 연결한다.
-        await qr.connect();
-        // 쿼리 러너에서 트랜잭션을 시작한다.
-        // 이 시점부터 같은 쿼리 러너를 사용하면, 트랜잭션 안에서 DB 액션을 실행 할 수 있다.
-
-        // 트랜잭션 시작.
-        await qr.startTransaction();
-
-        // 로직 실행. (로직에서 에러가 나면 롤백을 해주어야 함.)
-        try {
-            // temp -> posts로 옮긴다음에 포스팅
-            const post = await this.postsService.createPost(userId, body, qr);
-            // throw new InternalServerErrorException("에러가 생겼습니다.");
-            // 포스트만 생성하고, 이미지는 생성안해버림 throw 에러에서 걸림. 원래는 포스트 게시글이 생기면 안됨.
-
-            for (let i = 0; i < body.images.length; i++) {
-                await this.PostsImagesService.createPostImage(
-                    {
-                        post,
-                        order: i,
-                        path: body.images[i],
-                        type: ImageModelType.POST_IMAGE,
-                    },
-                    qr,
-                );
-            }
-
-            // 정상적으로 잘 실행되면 쿼리를 잘 실행해주면 됩니다!
-            await qr.commitTransaction();
-            // 그 다음 쿼리 종료
-            await qr.release();
-
-            // 가장 최근상태의 포스트를 받아와서, 반환해줌.
-            return this.postsService.getPostById(post.id);
-        } catch (e) {
-            // 어떤 에러든 에러가 던져지면
-            // 트랜잭션 종료 원래 상태로 되돌림.
-            await qr.rollbackTransaction();
-            // 쿼리러너를 사용하지 않는다.
-            await qr.release();
-
-            throw new InternalServerErrorException("에러가 났습니다.");
+        for (let i = 0; i < body.images.length; i++) {
+            await this.PostsImagesService.createPostImage(
+                {
+                    post,
+                    order: i,
+                    path: body.images[i],
+                    type: ImageModelType.POST_IMAGE,
+                },
+                qr,
+            );
         }
+
+        // Transaction 타입에 따라서 Transaction이 커밋 되기전에 최신 값을 가져오지 못할 수 있다. (service에서 해당 문제 처리 직접 qr받아서)
+        // 가장 최근상태의 포스트를 받아와서, 반환해줌.
+        return this.postsService.getPostById(post.id, qr);
     }
 
     // 4) PATCH /posts/:id (부분적으로 업데이트는 PATCH임)
