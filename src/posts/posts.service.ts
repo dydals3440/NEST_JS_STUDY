@@ -209,7 +209,7 @@ export class PostsService {
         return post;
     }
     // async createPost(authorId: number, title: string, content: string)
-    async createPost(authorId: number, postDto: CreatePostDto, image?: string) {
+    async createPost(authorId: number, postDto: CreatePostDto) {
         // 1) create -> 저장할 객체를 생성한다.
         // 2) save -> 객체를 저장한다. (create method에서 생성한 객체로 저장한다.)
 
@@ -222,7 +222,6 @@ export class PostsService {
             // title,
             // content,
             ...postDto,
-            image,
             likeCount: 0,
             commentCount: 0,
         });

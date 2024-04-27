@@ -59,12 +59,8 @@ export class PostsController {
     // DTO - Data Transfer Object
     @Post()
     @UseGuards(AccessTokenGuard)
-    // FileInterceptor의 첫번쨰 인자에는, 실제 파일을 업로드 할 필드의 이름을 적어주면 됨.
-    // 클라이언트에서 이미지를 업로드 할 떄, image라는 키값에 파일을 넣어서 보내면됨.
-    // 그럼 등록을 할 때 postsmodule에 등록한 절차를 확인하고, 이 파일을 받게 된다.
-    @UseInterceptors(FileInterceptor("image"))
-    postPost(@User("id") userId: number, @Body() body: CreatePostDto, @UploadedFile() file?: Express.Multer.File) {
-        return this.postsService.createPost(userId, body, file?.filename);
+    postPost(@User("id") userId: number, @Body() body: CreatePostDto) {
+        return this.postsService.createPost(userId, body);
     }
 
     // 4) PATCH /posts/:id (부분적으로 업데이트는 PATCH임)
