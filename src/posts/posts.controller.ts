@@ -1,3 +1,4 @@
+import { PostsImagesService } from "./image/images.service";
 import {
     Body,
     Controller,
@@ -34,6 +35,7 @@ export class PostsController {
     // posts.module.ts에 가보면됨.
     constructor(
         private readonly postsService: PostsService,
+        private readonly PostsImagesService: PostsImagesService,
         // nest.js에서 주는 것, 데베 관련
         private readonly dataSource: DataSource,
     ) {}
@@ -96,17 +98,20 @@ export class PostsController {
         // 로직 실행. (로직에서 에러가 나면 롤백을 해주어야 함.)
         try {
             // temp -> posts로 옮긴다음에 포스팅
-            const post = await this.postsService.createPost(userId, body);
-            // throw new InternalServerErrorException("에러가 생겼습니다.");
+            const post = await this.postsService.createPost(userId, body, qr);
+            throw new InternalServerErrorException("에러가 생겼습니다.");
             // 포스트만 생성하고, 이미지는 생성안해버림 throw 에러에서 걸림. 원래는 포스트 게시글이 생기면 안됨.
 
             for (let i = 0; i < body.images.length; i++) {
-                await this.postsService.createPostImage({
-                    post,
-                    order: i,
-                    path: body.images[i],
-                    type: ImageModelType.POST_IMAGE,
-                });
+                await this.PostsImagesService.createPostImage(
+                    {
+                        post,
+                        order: i,
+                        path: body.images[i],
+                        type: ImageModelType.POST_IMAGE,
+                    },
+                    qr,
+                );
             }
 
             // 정상적으로 잘 실행되면 쿼리를 잘 실행해주면 됩니다!
@@ -122,6 +127,8 @@ export class PostsController {
             await qr.rollbackTransaction();
             // 쿼리러너를 사용하지 않는다.
             await qr.release();
+
+            throw new InternalServerErrorException("에러가 났습니다.");
         }
     }
 

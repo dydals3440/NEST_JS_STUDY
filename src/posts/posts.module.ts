@@ -16,6 +16,7 @@ import * as multer from "multer";
 import { POST_IMAGE_PATH } from "src/common/const/path.const";
 import { v4 as uuid } from "uuid";
 import { ImageModel } from "src/common/entity/image.entity";
+import { PostsImagesService } from "./image/images.service";
 
 // controllers에는 컨트롤러들을 등록할 수 있는 위치
 // ()해야 인스턴스를 넣는건데 우리는 PostsService이런식으로 인스턴스를 넣은게 아님
@@ -35,7 +36,7 @@ import { ImageModel } from "src/common/entity/image.entity";
         CommonModule,
     ],
     controllers: [PostsController],
-    providers: [PostsService, AuthService, UsersService],
+    providers: [PostsService, AuthService, UsersService, PostsImagesService],
 })
 // PostsService는 PostsModule안에 provider로 등록되어있음.
 // PostsService안에서, PostRepository를 사용할 것이기 떄문에 위와같이 해주어야한다.

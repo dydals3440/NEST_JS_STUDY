@@ -210,38 +210,6 @@ export class PostsService {
         return post;
     }
 
-    async createPostImage(dto: CreatePostImageDto) {
-        // dto 이미지 이름 기반으로
-        // 파일의 경로를 생성
-        const tempFilePath = join(TEMP_FOLDER_PATH, dto.path);
-
-        try {
-            // 파일 존재하는지 확인. (promises는 전부다 비동기)
-            // access란 함수는, 경로를 넣었을 때 해당하는 파일이 접근가능한 상태인지 알려줌.
-            // 즉, 파일이 존재하는지 확인 존재하지 않으면 에러 발생.
-            await promises.access(tempFilePath);
-        } catch (e) {
-            // 위에서 에러시
-            throw new BadRequestException("존재하지 않는 파일 입니다.");
-        }
-        // 파일의 이름만 가져오기 (fs module basename)
-        // /Users/aaa/bbb/asdf.jpg => asdf.jpg 만 뽑아줌.
-        const fileName = basename(tempFilePath);
-        // 새로 이동할 포스트 폴더의 경로 + 이미지 이름.
-        // /posts/asdf.jpg
-        const newPath = join(POST_IMAGE_PATH, fileName);
-
-        // save
-        const result = await this.imageRepository.save({
-            ...dto,
-        });
-
-        // 실제 옮기기 (rename)
-        await promises.rename(tempFilePath, newPath);
-
-        return result;
-    }
-
     getRepository(qr?: QueryRunner) {
         return qr ? qr.manager.getRepository<PostsModel>(PostsModel) : this.postsRepository;
     }
@@ -265,7 +233,7 @@ export class PostsService {
             commentCount: 0,
         });
         // 여기서 await하주고 실제 저장하는 기능 save를 실행하게 되면 newPost값에는, id까지 포함해서 모든 데이터들이 입력이 됩니다.
-        const newPost = await this.postsRepository.save(post);
+        const newPost = await repository.save(post);
         // SNS시 완전히 같은 내용 제목 사용자 아이디를 갖고서 포스트를 할 수 있음. 실제로 하지만 다른 포스트가 될 것
         // 다른 포스트라는 의도를 갖고 올렸을 것. 완전히 같은 값들을 어떻게 구분할 수 있냐, 이것을 아이디로만 구분할 수 있다.
         // 그래서 PrimaryColumn이 꼭 필요한 것 이다.
