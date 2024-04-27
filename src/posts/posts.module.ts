@@ -1,6 +1,6 @@
 import { UsersModel } from "src/users/entities/users.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Module } from "@nestjs/common";
+import { BadRequestException, Module } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { PostsController } from "./posts.controller";
 import { PostsModel } from "./entities/posts.entity";
@@ -10,6 +10,11 @@ import { JwtModule } from "@nestjs/jwt";
 import { AuthModule } from "src/auth/auth.module";
 import { UsersModule } from "src/users/users.module";
 import { CommonModule } from "src/common/common.module";
+import { MulterModule } from "@nestjs/platform-express";
+import { extname } from "path";
+import * as multer from "multer";
+import { POST_IMAGE_PATH } from "src/common/const/path.const";
+import { v4 as uuid } from "uuid";
 
 // controllers에는 컨트롤러들을 등록할 수 있는 위치
 // ()해야 인스턴스를 넣는건데 우리는 PostsService이런식으로 인스턴스를 넣은게 아님
@@ -27,6 +32,39 @@ import { CommonModule } from "src/common/common.module";
         AuthModule,
         UsersModule,
         CommonModule,
+        MulterModule.register({
+            limits: {
+                // byte 단위 입력(10mb -> 10만)
+                fileSize: 1000000,
+            },
+            fileFilter: (req, file, cb) => {
+                /**
+                 * cb(에러, boolean)
+                 *
+                 * 첫번쨰 파라미터에는 에러가 있을 경우 에러정보를 넣어줌.
+                 * 두번쨰 파라미터는 파일을 받을지 말지 boolean을 넣어줌.
+                 */
+                // xxx.jpg -> .jpg로 따오는게 extname 역할
+                const ext = extname(file.originalname);
+
+                if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png") {
+                    // 통과 못하면 저장 안할꺼니 False
+                    return cb(new BadRequestException("jpg/jpeg/png 파일만 업로드 가능합니다."), false);
+                }
+                // 위에 에러가 없으면 파일을 받을꺼임.
+                return cb(null, true);
+            },
+            storage: multer.diskStorage({
+                destination: function (req, res, cb) {
+                    // 두번쨰 인자가 파일을 저장할 폴더의 경로
+                    cb(null, POST_IMAGE_PATH);
+                },
+                filename: function (req, file, cb) {
+                    // 12312312-123-123123-123123.png
+                    cb(null, `${uuid()}${extname(file.originalname)}`);
+                },
+            }),
+        }),
     ],
     controllers: [PostsController],
     providers: [PostsService, AuthService, UsersService],
