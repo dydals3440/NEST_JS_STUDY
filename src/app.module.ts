@@ -17,11 +17,22 @@ import {
     ENV_DB_PORT_KEY,
     ENV_DB_USERNAME_KEY,
 } from "./common/const/env-keys.const";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { PUBLIC_FOLDER_PATH } from "./common/const/path.const";
 
 @Module({
     // 다른 모듈을 불러올 떄 사용
     imports: [
         PostsModule,
+        ServeStaticModule.forRoot({
+            // public 폴더에 이미지가 있기에 public 폴더의 절대 경로
+            // image.jpg 를 갖고올려면
+            // rootPath만하면: http://localhost:3000/posts/image.jpg (X)
+            // public이 안붙게됨. public 접두어를 붙고싶음.
+            rootPath: PUBLIC_FOLDER_PATH,
+            // http://localhost:3000/public/posts/image.jpg (O) 우리가 원하는 방향대로함.
+            serveRoot: "/public",
+        }),
         ConfigModule.forRoot({
             envFilePath: ".env",
             // module 이기떄문에 쓸려는 모든 곳에서 import를 넣어줘야함.
