@@ -21,6 +21,7 @@ import { UpdatePostDto } from "./dto/update-post.dto";
 import { PaginatePostDto } from "./dto/paginate-post.dto";
 import { UsersModel } from "src/users/entities/users.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { ImageModelType } from "src/common/entity/image.entity";
 
 // Controller Annotation
 @Controller("posts")
@@ -75,8 +76,19 @@ export class PostsController {
     @UseGuards(AccessTokenGuard)
     async postPost(@User("id") userId: number, @Body() body: CreatePostDto) {
         // temp -> posts로 옮긴다음에 포스팅
-        await this.postsService.createPostImage(body);
-        return this.postsService.createPost(userId, body);
+
+        const post = await this.postsService.createPost(userId, body);
+
+        for (let i = 0; i < body.images.length; i++) {
+            await this.postsService.createPostImage({
+                post,
+                order: i,
+                path: body.images[i],
+                type: ImageModelType.POST_IMAGE,
+            });
+        }
+        // 가장 최근상태의 포스트를 받아와서, 반환해줌.
+        return this.postsService.getPostById(post.id);
     }
 
     // 4) PATCH /posts/:id (부분적으로 업데이트는 PATCH임)

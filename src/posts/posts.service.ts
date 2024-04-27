@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { DEFAULT_POST_FIND_OPTIONS } from "./const/default-post-find-options.const";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FindOptionsWhere, LessThan, MoreThan, Repository } from "typeorm";
 import { PostsModel } from "./entities/posts.entity";
@@ -12,6 +13,8 @@ import { ENV_HOST_KEY, ENV_PROTOCOL_KEY } from "src/common/const/env-keys.const"
 import { POST_IMAGE_PATH, PUBLIC_FOLDER_PATH, TEMP_FOLDER_PATH } from "src/common/const/path.const";
 import { basename, join } from "path";
 import { promises } from "fs";
+import { CreatePostImageDto } from "./image/dto/create-image.dto";
+import { ImageModel } from "src/common/entity/image.entity";
 
 /**
  * author: string;
@@ -21,15 +24,6 @@ import { promises } from "fs";
  * commentCount: number;
  */
 
-export interface PostModel {
-    id: number;
-    author: string;
-    title: string;
-    content: string;
-    likeCount: number;
-    commentCount: number;
-}
-
 // 주입할 수 있다. 결과적으로, 모듈안에다가 우리가 프로바이더 안에 원하는 클래스를 등록하면, 디펜던시 인젝션의 용도로 사용가능.
 // 그거외에도 실제로 프로바이더에다가, Injectable을 해줘야만 프로바이더로 사용할 수 있다.
 // 프로바이더로 사용하고 싶은 클래스에다 모듈 등록 + 인젝터블로 애노테이션 해주는 것. 그럼 IoC 컨테이너가, 그 어떤 곳에서 사용할 수 있게 된다.
@@ -38,6 +32,8 @@ export class PostsService {
     constructor(
         @InjectRepository(PostsModel)
         private readonly postsRepository: Repository<PostsModel>,
+        @InjectRepository(ImageModel)
+        private readonly imageRepository: Repository<ImageModel>,
         private readonly commonService: CommonService,
         private readonly configService: ConfigService,
     ) {}
@@ -45,7 +41,8 @@ export class PostsService {
     async getAllPosts() {
         return this.postsRepository.find({
             // 포스트에서 relation 연결한 author도 같이 받아오고 싶을 떄.
-            relations: ["author"],
+            // relations: ["author"],
+            ...DEFAULT_POST_FIND_OPTIONS,
         });
     }
 
@@ -54,6 +51,7 @@ export class PostsService {
             await this.createPost(userId, {
                 title: `임의로 생성된 포스트 제목 ${i}`,
                 content: `임의로 생성도니 컨텐트 예시 ${i}`,
+                images: [],
             });
         }
     }
@@ -63,7 +61,7 @@ export class PostsService {
             dto,
             this.postsRepository,
             {
-                relations: ["author"],
+                ...DEFAULT_POST_FIND_OPTIONS,
             },
             "posts",
         );
@@ -199,10 +197,10 @@ export class PostsService {
 
     async getPostById(id: number) {
         const post = await this.postsRepository.findOne({
+            ...DEFAULT_POST_FIND_OPTIONS,
             where: {
                 id,
             },
-            relations: ["author"],
         });
 
         if (!post) {
@@ -212,10 +210,10 @@ export class PostsService {
         return post;
     }
 
-    async createPostImage(dto: CreatePostDto) {
+    async createPostImage(dto: CreatePostImageDto) {
         // dto 이미지 이름 기반으로
         // 파일의 경로를 생성
-        const tempFilePath = join(TEMP_FOLDER_PATH, dto.image);
+        const tempFilePath = join(TEMP_FOLDER_PATH, dto.path);
 
         try {
             // 파일 존재하는지 확인. (promises는 전부다 비동기)
@@ -232,10 +230,16 @@ export class PostsService {
         // 새로 이동할 포스트 폴더의 경로 + 이미지 이름.
         // /posts/asdf.jpg
         const newPath = join(POST_IMAGE_PATH, fileName);
+
+        // save
+        const result = await this.imageRepository.save({
+            ...dto,
+        });
+
         // 실제 옮기기 (rename)
         await promises.rename(tempFilePath, newPath);
 
-        return true;
+        return result;
     }
 
     // async createPost(authorId: number, title: string, content: string)
@@ -252,6 +256,7 @@ export class PostsService {
             // title,
             // content,
             ...postDto,
+            images: [],
             likeCount: 0,
             commentCount: 0,
         });

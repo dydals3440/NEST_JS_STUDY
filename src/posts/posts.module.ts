@@ -15,6 +15,7 @@ import { extname } from "path";
 import * as multer from "multer";
 import { POST_IMAGE_PATH } from "src/common/const/path.const";
 import { v4 as uuid } from "uuid";
+import { ImageModel } from "src/common/entity/image.entity";
 
 // controllers에는 컨트롤러들을 등록할 수 있는 위치
 // ()해야 인스턴스를 넣는건데 우리는 PostsService이런식으로 인스턴스를 넣은게 아님
@@ -28,7 +29,7 @@ import { v4 as uuid } from "uuid";
 @Module({
     imports: [
         JwtModule.register({}),
-        TypeOrmModule.forFeature([PostsModel, UsersModel]),
+        TypeOrmModule.forFeature([PostsModel, UsersModel, ImageModel]),
         AuthModule,
         UsersModule,
         CommonModule,
