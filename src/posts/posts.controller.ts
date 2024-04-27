@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    InternalServerErrorException,
     Param,
     ParseIntPipe,
     Patch,
@@ -22,6 +23,7 @@ import { PaginatePostDto } from "./dto/paginate-post.dto";
 import { UsersModel } from "src/users/entities/users.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ImageModelType } from "src/common/entity/image.entity";
+import { DataSource } from "typeorm";
 
 // Controller Annotation
 @Controller("posts")
@@ -30,7 +32,11 @@ export class PostsController {
     // PostService라는 것을 한번도 주입한 적이 없음. PostService와 관련된 기능들을 전부 다 잘 사용함.
     // nestJS iOC 컨테이너가 이 주입되어야 하는 서비스들을 생성해줌. 어디다 등록을 해야지 iOC 컨테이너가 인지?
     // posts.module.ts에 가보면됨.
-    constructor(private readonly postsService: PostsService) {}
+    constructor(
+        private readonly postsService: PostsService,
+        // nest.js에서 주는 것, 데베 관련
+        private readonly dataSource: DataSource,
+    ) {}
 
     // 1) GET /posts
     //  모든 posts를 다 가져온다.
@@ -75,20 +81,48 @@ export class PostsController {
     @Post()
     @UseGuards(AccessTokenGuard)
     async postPost(@User("id") userId: number, @Body() body: CreatePostDto) {
-        // temp -> posts로 옮긴다음에 포스팅
+        // 트랜잭션과 관련된 모든 쿼리를 담당할 쿼리러너 생성.
+        // 쿼리러너를 실행해줘야지 트랜잭션에 묶이기 떄문에 service(createpost에 가서 qr을 인자로 받아서, 실행 처리 해주어야함.)
+        const qr = this.dataSource.createQueryRunner();
 
-        const post = await this.postsService.createPost(userId, body);
+        // 쿼리 러너에 연결한다.
+        await qr.connect();
+        // 쿼리 러너에서 트랜잭션을 시작한다.
+        // 이 시점부터 같은 쿼리 러너를 사용하면, 트랜잭션 안에서 DB 액션을 실행 할 수 있다.
 
-        for (let i = 0; i < body.images.length; i++) {
-            await this.postsService.createPostImage({
-                post,
-                order: i,
-                path: body.images[i],
-                type: ImageModelType.POST_IMAGE,
-            });
+        // 트랜잭션 시작.
+        await qr.startTransaction();
+
+        // 로직 실행. (로직에서 에러가 나면 롤백을 해주어야 함.)
+        try {
+            // temp -> posts로 옮긴다음에 포스팅
+            const post = await this.postsService.createPost(userId, body);
+            // throw new InternalServerErrorException("에러가 생겼습니다.");
+            // 포스트만 생성하고, 이미지는 생성안해버림 throw 에러에서 걸림. 원래는 포스트 게시글이 생기면 안됨.
+
+            for (let i = 0; i < body.images.length; i++) {
+                await this.postsService.createPostImage({
+                    post,
+                    order: i,
+                    path: body.images[i],
+                    type: ImageModelType.POST_IMAGE,
+                });
+            }
+
+            // 정상적으로 잘 실행되면 쿼리를 잘 실행해주면 됩니다!
+            await qr.commitTransaction();
+            // 그 다음 쿼리 종료
+            await qr.release();
+
+            // 가장 최근상태의 포스트를 받아와서, 반환해줌.
+            return this.postsService.getPostById(post.id);
+        } catch (e) {
+            // 어떤 에러든 에러가 던져지면
+            // 트랜잭션 종료 원래 상태로 되돌림.
+            await qr.rollbackTransaction();
+            // 쿼리러너를 사용하지 않는다.
+            await qr.release();
         }
-        // 가장 최근상태의 포스트를 받아와서, 반환해줌.
-        return this.postsService.getPostById(post.id);
     }
 
     // 4) PATCH /posts/:id (부분적으로 업데이트는 PATCH임)

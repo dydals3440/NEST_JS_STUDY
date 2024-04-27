@@ -1,7 +1,7 @@
 import { DEFAULT_POST_FIND_OPTIONS } from "./const/default-post-find-options.const";
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { FindOptionsWhere, LessThan, MoreThan, Repository } from "typeorm";
+import { FindOptionsWhere, LessThan, MoreThan, QueryRunner, Repository } from "typeorm";
 import { PostsModel } from "./entities/posts.entity";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { UpdatePostDto } from "./dto/update-post.dto";
@@ -242,14 +242,18 @@ export class PostsService {
         return result;
     }
 
+    getRepository(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<PostsModel>(PostsModel) : this.postsRepository;
+    }
+
     // async createPost(authorId: number, title: string, content: string)
-    async createPost(authorId: number, postDto: CreatePostDto) {
+    async createPost(authorId: number, postDto: CreatePostDto, qr?: QueryRunner) {
         // 1) create -> 저장할 객체를 생성한다.
         // 2) save -> 객체를 저장한다. (create method에서 생성한 객체로 저장한다.)
-
+        const repository = this.getRepository(qr);
         // 이거는 await를 안해도된다. 실제로 db에 저장하는 것이 아닌, 객체만 생성하는 것이기 떄문에 비동기가 아닌 동기이기 떄문.
         // 여기서 생성한 포스트는 id가 없음. (db에서 생성해줌)
-        const post = this.postsRepository.create({
+        const post = repository.create({
             author: {
                 id: authorId,
             },
