@@ -25,6 +25,7 @@ import { UsersModel } from "src/users/entities/users.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ImageModelType } from "src/common/entity/image.entity";
 import { DataSource } from "typeorm";
+import { LogInterceptor } from "src/common/interceptor/log.interceptor";
 
 // Controller Annotation
 @Controller("posts")
@@ -43,6 +44,7 @@ export class PostsController {
     // 1) GET /posts
     //  모든 posts를 다 가져온다.
     @Get()
+    @UseInterceptors(LogInterceptor)
     getPosts(@Query() query: PaginatePostDto) {
         return this.postsService.paginatePosts(query);
     }
@@ -99,7 +101,7 @@ export class PostsController {
         try {
             // temp -> posts로 옮긴다음에 포스팅
             const post = await this.postsService.createPost(userId, body, qr);
-            throw new InternalServerErrorException("에러가 생겼습니다.");
+            // throw new InternalServerErrorException("에러가 생겼습니다.");
             // 포스트만 생성하고, 이미지는 생성안해버림 throw 에러에서 걸림. 원래는 포스트 게시글이 생기면 안됨.
 
             for (let i = 0; i < body.images.length; i++) {
