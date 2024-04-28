@@ -50,7 +50,11 @@ export class PostsController {
     // 1) GET /posts
     //  모든 posts를 다 가져온다.
     @Get()
-    @ApiOperation({ summary: "Get All Posts.", description: "전체 포스트를 가져옵니다." })
+    @ApiOperation({
+        summary: "Get All Posts.",
+        description:
+            "전체 포스트를 가져옵니다. 단, page 파라피터를 사용하였을 경우, 페이지 기반 페이지네이션 API를 응답하고, page를 사용하지 않았을 경우, 커서 기반 페이지네이션 API를 응답합니다.",
+    })
     @ApiResponse({ status: 200, description: "성공" })
     @ApiResponse({
         status: 400,
