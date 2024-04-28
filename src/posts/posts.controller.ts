@@ -31,6 +31,7 @@ import { LogInterceptor } from "src/common/interceptor/log.interceptor";
 import { TransactionInterceptor } from "src/common/interceptor/transaction.interceptor";
 import { QueryRunner } from "src/common/decorator/query-runner.decorator";
 import { HttpExceptionFilter } from "src/common/exception-filter/http.exception-filter";
+import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiProperty, ApiQuery } from "@nestjs/swagger";
 
 // Controller Annotation
 @Controller("posts")
@@ -49,6 +50,16 @@ export class PostsController {
     // 1) GET /posts
     //  모든 posts를 다 가져온다.
     @Get()
+    @ApiOperation({ summary: "Get All Posts.", description: "전체 포스트를 가져옵니다." })
+    @ApiResponse({ status: 200, description: "성공" })
+    @ApiResponse({
+        status: 400,
+        description: "[ERROR] where 필터는 '__'로 split 했을 때 길이가 2 또는 3이어야합니다. - 문제되는 키값 ${key}",
+    })
+    @ApiResponse({
+        status: 500,
+        description: "Server Error",
+    })
     @UseInterceptors(LogInterceptor)
     // @UseFilters(HttpExceptionFilter)
     getPosts(@Query() query: PaginatePostDto) {
@@ -57,6 +68,8 @@ export class PostsController {
     }
 
     // POST /posts/random
+    @ApiOperation({ summary: "Get 100 random posts.", description: "100개의 랜덤한 포스트를 생성합니다." })
+    @ApiResponse({ status: 200, description: "성공" })
     @Post("random")
     @UseGuards(AccessTokenGuard)
     async postPostsRandom(@User() user: UsersModel) {
@@ -67,6 +80,9 @@ export class PostsController {
 
     // 2) GET /posts/:id
     // id에 해당되는 post를 가져온다.
+    @ApiOperation({ summary: "Get detail post.", description: "id에 해당하는 포스트 세부정부를 가져옵니다." })
+    @ApiResponse({ status: 200, description: "성공" })
+    @ApiResponse({ status: 404, description: "Not Found" })
     @Get(":id")
     getPost(@Param("id", ParseIntPipe) id: number) {
         return this.postsService.getPostById(id);
