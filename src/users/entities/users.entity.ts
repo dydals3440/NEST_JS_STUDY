@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from "typeorm";
 import { RolesEnum } from "../const/roles.const";
 import { PostsModel } from "src/posts/entities/posts.entity";
 import { BaseModel } from "src/common/entity/base.entity";
@@ -7,6 +7,7 @@ import { lengthValidationMessage } from "src/common/validation-message/length-va
 import { stringValidationMessage } from "src/common/validation-message/string-validation-message";
 import { emailValidationMessage } from "src/common/validation-message/email-validation-message";
 import { Exclude, Expose } from "class-transformer";
+import { ChatsModel } from "src/chats/entity/chats.entity";
 
 /**
  * id: number
@@ -91,4 +92,8 @@ export class UsersModel extends BaseModel {
 
     @OneToMany(() => PostsModel, (post) => post.author)
     posts: PostsModel[];
+
+    @ManyToMany(() => ChatsModel, (chat) => chat.users)
+    @JoinTable()
+    chats: ChatsModel[];
 }

@@ -9,6 +9,8 @@ import {
     WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { CreateChatDto } from "./dto/create-chat.dto";
+import { ChatsService } from "./chats.service";
 
 // 괄호 안에 옵션에 namespace정의
 @WebSocketGateway({
@@ -17,6 +19,7 @@ import { Server, Socket } from "socket.io";
 })
 // onConnect 설정는 implements한다음에 onGatewayConnection을 이식
 export class ChatsGateway implements OnGatewayConnection {
+    constructor(private readonly chatsService: ChatsService) {}
     @WebSocketServer()
     server: Server;
 
@@ -24,12 +27,14 @@ export class ChatsGateway implements OnGatewayConnection {
         console.log(`on connect called : ${socket.id}`);
     }
 
-    @SubscribeMessage("enter_chat")
-    enterChat(
-        @MessageBody() data: number[],
+    // 채팅방을 만드는 기능. (REST API가 맞을수도)
+    @SubscribeMessage("create_chat")
+    async createChat(@MessageBody() data: CreateChatDto, @ConnectedSocket() socket: Socket) {
+        const chat = await this.chatsService.createChat(data);
+    }
 
-        @ConnectedSocket() socket: Socket,
-    ) {
+    @SubscribeMessage("enter_chat")
+    enterChat(@MessageBody() data: number[], @ConnectedSocket() socket: Socket) {
         for (const chatId of data) {
             socket.join(chatId.toString());
         }
