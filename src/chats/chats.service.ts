@@ -41,4 +41,14 @@ export class ChatsService {
             },
         });
     }
+
+    async checkIfChatExists(chatId: number) {
+        const exists = await this.chatsRepository.exists({
+            where: {
+                id: chatId,
+            },
+        });
+
+        return exists;
+    }
 }
