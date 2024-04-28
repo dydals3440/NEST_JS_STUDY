@@ -31,7 +31,7 @@ import { LogInterceptor } from "src/common/interceptor/log.interceptor";
 import { TransactionInterceptor } from "src/common/interceptor/transaction.interceptor";
 import { QueryRunner } from "src/common/decorator/query-runner.decorator";
 import { HttpExceptionFilter } from "src/common/exception-filter/http.exception-filter";
-import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiProperty, ApiQuery } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiProperty, ApiQuery, ApiBearerAuth } from "@nestjs/swagger";
 
 // Controller Annotation
 @Controller("posts")
@@ -75,6 +75,7 @@ export class PostsController {
     @ApiOperation({ summary: "Get 100 random posts.", description: "100개의 랜덤한 포스트를 생성합니다." })
     @ApiResponse({ status: 200, description: "성공" })
     @Post("random")
+    @ApiBearerAuth("access-token")
     @UseGuards(AccessTokenGuard)
     async postPostsRandom(@User() user: UsersModel) {
         await this.postsService.generatePosts(user.id);

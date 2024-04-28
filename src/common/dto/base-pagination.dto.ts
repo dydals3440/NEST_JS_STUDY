@@ -16,7 +16,6 @@ export class BasePaginationDto {
     // 이전 마지막 데이터 ID
     // 이 프로퍼티에 입력된 ID 보다 높은 ID 부터 값을 가져오기
     @ApiProperty({
-        example: 1,
         description: "[page, cursor] where__id__less_than 보다 id 값이 작은 게시글을 반환합니다.",
         required: false,
     })
@@ -27,7 +26,6 @@ export class BasePaginationDto {
     // 이전 마지막 데이터 ID
     // 이 프로퍼티에 입력된 ID 보다 높은 ID 부터 값을 가져오기
     @ApiProperty({
-        example: 1,
         description: "[page, cursor] where__id__more_than 보다 id 값이 큰 게시글을 반환합니다.",
         required: false,
     })

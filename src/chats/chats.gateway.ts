@@ -15,6 +15,7 @@ import { ChatsService } from "./chats.service";
 import { EnterChatDto } from "./dto/enter-chat.dto";
 import { CreateMessagesDto } from "./messages/dto/create-messages.dto";
 import { ChatsMessagesService } from "./messages/messages.service";
+import { UsePipes, ValidationPipe } from "@nestjs/common";
 
 // 괄호 안에 옵션에 namespace정의
 @WebSocketGateway({
@@ -34,7 +35,16 @@ export class ChatsGateway implements OnGatewayConnection {
         console.log(`on connect called : ${socket.id}`);
     }
 
-    // 채팅방을 만드는 기능. (REST API가 맞을수도)
+    @UsePipes(
+        new ValidationPipe({
+            transform: true,
+            transformOptions: {
+                enableImplicitConversion: true,
+            },
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        }),
+    )
     @SubscribeMessage("create_chat")
     async createChat(@MessageBody() data: CreateChatDto, @ConnectedSocket() socket: Socket) {
         const chat = await this.chatsService.createChat(data);
