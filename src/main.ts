@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
+import { HttpExceptionFilter } from "./common/exception-filter/http.exception-filter";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { cors: true });
@@ -19,6 +20,8 @@ async function bootstrap() {
             forbidNonWhitelisted: true,
         }),
     );
+    // // 글로벌 에러 적용
+    // app.useGlobalFilters(new HttpExceptionFilter());
 
     await app.listen(3000);
 }

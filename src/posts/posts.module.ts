@@ -1,6 +1,6 @@
 import { UsersModel } from "src/users/entities/users.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { BadRequestException, Module } from "@nestjs/common";
+import { BadRequestException, MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { PostsController } from "./posts.controller";
 import { PostsModel } from "./entities/posts.entity";
@@ -17,6 +17,7 @@ import { POST_IMAGE_PATH } from "src/common/const/path.const";
 import { v4 as uuid } from "uuid";
 import { ImageModel } from "src/common/entity/image.entity";
 import { PostsImagesService } from "./image/images.service";
+import { LogMiddleware } from "src/common/middleware/log.middleware";
 
 // controllers에는 컨트롤러들을 등록할 수 있는 위치
 // ()해야 인스턴스를 넣는건데 우리는 PostsService이런식으로 인스턴스를 넣은게 아님
@@ -41,3 +42,17 @@ import { PostsImagesService } from "./image/images.service";
 // PostsService는 PostsModule안에 provider로 등록되어있음.
 // PostsService안에서, PostRepository를 사용할 것이기 떄문에 위와같이 해주어야한다.
 export class PostsModule {}
+
+// // middleware는 여기다 implements
+// // consumer를 사용하고, path를 통해 어떤 경로에 적용할건지
+// // method를 통해 어떤 라우트에 적용할 것 인지.
+// export class PostsModule implements NestModule {
+//     configure(consumer: MiddlewareConsumer) {
+//         consumer.apply(LogMiddleware).forRoutes({
+//             // 정확히 posts인 경우에만 됨.
+//             // 그 뒤로 어떤것도 붙어도 상관없을떄는 * 붙임
+//             path: "posts*",
+//             method: RequestMethod.GET,
+//         });
+//     }
+// }

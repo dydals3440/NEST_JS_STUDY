@@ -1,5 +1,6 @@
 import { PostsImagesService } from "./image/images.service";
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -11,6 +12,7 @@ import {
     Post,
     Query,
     UploadedFile,
+    UseFilters,
     UseGuards,
     UseInterceptors,
 } from "@nestjs/common";
@@ -28,6 +30,7 @@ import { DataSource, QueryRunner as QR } from "typeorm";
 import { LogInterceptor } from "src/common/interceptor/log.interceptor";
 import { TransactionInterceptor } from "src/common/interceptor/transaction.interceptor";
 import { QueryRunner } from "src/common/decorator/query-runner.decorator";
+import { HttpExceptionFilter } from "src/common/exception-filter/http.exception-filter";
 
 // Controller Annotation
 @Controller("posts")
@@ -47,7 +50,9 @@ export class PostsController {
     //  모든 posts를 다 가져온다.
     @Get()
     @UseInterceptors(LogInterceptor)
+    // @UseFilters(HttpExceptionFilter)
     getPosts(@Query() query: PaginatePostDto) {
+        // throw new BadRequestException('에러 테스트');
         return this.postsService.paginatePosts(query);
     }
 
