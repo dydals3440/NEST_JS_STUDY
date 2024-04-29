@@ -1,5 +1,5 @@
 import { IsOptional, IsString } from "class-validator";
-import { PostsModel } from "../entities/posts.entity";
+import { PostsModel } from "../entity/posts.entity";
 import { PickType } from "@nestjs/mapped-types";
 
 // Pick, Omit, Partial  (타입을 반환)

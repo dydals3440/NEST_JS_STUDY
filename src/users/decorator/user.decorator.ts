@@ -1,5 +1,5 @@
 import { ExecutionContext, InternalServerErrorException, createParamDecorator } from "@nestjs/common";
-import { UsersModel } from "../entities/users.entity";
+import { UsersModel } from "../entity/users.entity";
 
 // data는 데코레이터 안에다가 입력해주는 값이다. @Body('title')할 때 title을 의미
 // 두번쨰 인자는 context이다.

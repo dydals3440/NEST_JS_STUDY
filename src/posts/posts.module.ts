@@ -1,9 +1,9 @@
-import { UsersModel } from "src/users/entities/users.entity";
+import { UsersModel } from "src/users/entity/users.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { BadRequestException, MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { PostsController } from "./posts.controller";
-import { PostsModel } from "./entities/posts.entity";
+import { PostsModel } from "./entity/posts.entity";
 import { AuthService } from "src/auth/auth.service";
 import { UsersService } from "src/users/users.service";
 import { JwtModule } from "@nestjs/jwt";
