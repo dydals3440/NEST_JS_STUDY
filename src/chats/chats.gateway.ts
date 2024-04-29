@@ -15,7 +15,8 @@ import { ChatsService } from "./chats.service";
 import { EnterChatDto } from "./dto/enter-chat.dto";
 import { CreateMessagesDto } from "./messages/dto/create-messages.dto";
 import { ChatsMessagesService } from "./messages/messages.service";
-import { UsePipes, ValidationPipe } from "@nestjs/common";
+import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
+import { SocketCatchHttpExceptionFilter } from "src/common/exception-filter/socket-catch-http.exception-filter";
 
 // 괄호 안에 옵션에 namespace정의
 @WebSocketGateway({
@@ -35,6 +36,9 @@ export class ChatsGateway implements OnGatewayConnection {
         console.log(`on connect called : ${socket.id}`);
     }
 
+    // 여기서 에러가안잡히는 이유는 Http Exception만 잡도록 pipe가 설계되었기 떄문입니다.
+    // WsException을 잡을려면 별도의 Exception Filter를 거칠 수 있도록 만들어야 한다.
+    // 에러를 다르게 변환은 시킬 수 있는 데코레이터는 Exception Filter
     @UsePipes(
         new ValidationPipe({
             transform: true,
@@ -45,6 +49,7 @@ export class ChatsGateway implements OnGatewayConnection {
             forbidNonWhitelisted: true,
         }),
     )
+    @UseFilters(SocketCatchHttpExceptionFilter)
     @SubscribeMessage("create_chat")
     async createChat(@MessageBody() data: CreateChatDto, @ConnectedSocket() socket: Socket) {
         const chat = await this.chatsService.createChat(data);
