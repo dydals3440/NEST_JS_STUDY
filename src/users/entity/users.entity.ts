@@ -9,6 +9,7 @@ import { emailValidationMessage } from "src/common/validation-message/email-vali
 import { Exclude, Expose } from "class-transformer";
 import { ChatsModel } from "src/chats/entity/chats.entity";
 import { MessagesModel } from "src/chats/messages/entity/messages.entity";
+import { CommentsModel } from "src/posts/comments/entity/comments.entity";
 
 /**
  * id: number
@@ -102,4 +103,7 @@ export class UsersModel extends BaseModel {
 
     @OneToMany(() => MessagesModel, (message) => message.author)
     messages: MessagesModel;
+
+    @OneToMany(() => CommentsModel, (comment) => comment.author)
+    postComments: CommentsModel[];
 }
