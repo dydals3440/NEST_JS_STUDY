@@ -4,6 +4,8 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
@@ -28,7 +30,7 @@ import { AuthService } from "src/auth/auth.service";
     namespace: "chats",
 })
 // onConnect 설정는 implements한다음에 onGatewayConnection을 이식
-export class ChatsGateway implements OnGatewayConnection {
+export class ChatsGateway implements OnGatewayConnection, OnGatewayInit, OnGatewayDisconnect {
     constructor(
         private readonly chatsService: ChatsService,
         private readonly messagesService: ChatsMessagesService,
@@ -37,6 +39,17 @@ export class ChatsGateway implements OnGatewayConnection {
     ) {}
     @WebSocketServer()
     server: Server;
+
+    // OnGatewayInit (server인자는 위랑 동일)
+    afterInit(server: any) {
+        // 게이트가 초기화되었을떄 실행할 수 있는 함수.
+        // 게이트웨이가 시작됐을떄 특정함수나 로직을 실행하고싶으면 afterInit을 사용하면됨.
+        console.log(`after gateway init`);
+    }
+
+    handleDisconnect(socket: Socket) {
+        console.log(`on disconnect called: ${socket.id}`);
+    }
 
     // 연결을 하고서, 연결이 뚫리면 클라이언트와 서버가 파이프같은게 생김.
     // 같은 클라이언트는 같은 소켓을 통해서 통신함. (한번 연결되있음 계속 지속됨 그래야 통신되므로)
