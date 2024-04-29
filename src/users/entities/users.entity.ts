@@ -80,7 +80,9 @@ export class UsersModel extends BaseModel {
      * 요청시 우리는 비밀번호를 받아야하고, 클라이언트에서 응답할때만 exclude 시켜야함.
      */
     @Exclude({
+        // 응답에서만 삭제
         toPlainOnly: true,
+        // toClassOnly 요청에서만 삭제
     })
     password: string;
 
