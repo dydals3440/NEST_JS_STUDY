@@ -38,6 +38,7 @@ import { LogMiddleware } from "src/common/middleware/log.middleware";
     ],
     controllers: [PostsController],
     providers: [PostsService, AuthService, UsersService, PostsImagesService],
+    exports: [PostsService],
 })
 // PostsService는 PostsModule안에 provider로 등록되어있음.
 // PostsService안에서, PostRepository를 사용할 것이기 떄문에 위와같이 해주어야한다.
