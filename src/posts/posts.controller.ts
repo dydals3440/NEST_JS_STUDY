@@ -32,6 +32,8 @@ import { TransactionInterceptor } from "src/common/interceptor/transaction.inter
 import { QueryRunner } from "src/common/decorator/query-runner.decorator";
 import { HttpExceptionFilter } from "src/common/exception-filter/http.exception-filter";
 import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiProperty, ApiQuery, ApiBearerAuth } from "@nestjs/swagger";
+import { Roles } from "src/users/decorator/roles.decorator";
+import { RolesEnum } from "src/users/const/roles.const";
 
 // Controller Annotation
 @Controller("posts")
@@ -152,7 +154,12 @@ export class PostsController {
     // 5) DELETE /posts/:id
     // id에 해당되는 POST를 삭제한다.
     @Delete(":id")
+    // 토큰 유무 확인 후, 이 사용자가 AMIN인지 확인.
+    @UseGuards(AccessTokenGuard)
+    @Roles(RolesEnum.ADMIN)
     deletePost(@Param("id", ParseIntPipe) id: number) {
         return this.postsService.deletePost(id);
     }
+
+    // RBAC -> Role Based Access Controller
 }
