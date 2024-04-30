@@ -7,6 +7,7 @@ import { CommentsModel } from "./entity/comments.entity";
 import { Repository } from "typeorm";
 import { CreateCommentsDto } from "./dto/create-comments.dto";
 import { UsersModel } from "src/users/entity/users.entity";
+import { UpdateCommentsDto } from "./dto/update-domments.dto";
 
 @Injectable()
 export class CommentsService {
@@ -56,5 +57,15 @@ export class CommentsService {
             },
             author,
         });
+    }
+
+    async updateComment(dto: UpdateCommentsDto, commentId: number) {
+        // preload
+        // id기반으로 찾은다음에, dto 내용으로 데이터를 변경함.
+        const prevComment = await this.commentsRepository.preload({ id: commentId, ...dto });
+
+        const newComment = await this.commentsRepository.save(prevComment);
+
+        return newComment;
     }
 }

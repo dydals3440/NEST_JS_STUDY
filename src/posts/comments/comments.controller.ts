@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { CommentsService } from "./comments.service";
 import { PaginateCommentsDto } from "./dto/paginate-comments.dto";
 import { AccessTokenGuard } from "src/auth/guard/bearer-token.guard";
 import { CreateCommentsDto } from "./dto/create-comments.dto";
 import { User } from "src/users/decorator/user.decorator";
 import { UsersModel } from "src/users/entity/users.entity";
+import { UpdateCommentsDto } from "./dto/update-domments.dto";
 
 // 항상 특정 포스트에 귀속이 되므로
 @Controller("posts/:postId/comments")
@@ -49,5 +50,12 @@ export class CommentsController {
         @User() user: UsersModel,
     ) {
         return this.commentsService.createComment(body, pid, user);
+    }
+
+    @Patch(":commentId")
+    // accesstoken이 있기만하면,어떤 코멘트든 변경이 가능하다 라는 로직이 됨. 이거는 나중에 Rollbased access controll, authorization 관련 가드 만들떄 알아봄.
+    @UseGuards(AccessTokenGuard)
+    async patchComment(@Param("commentId", ParseIntPipe) commentId: number, @Body() body: UpdateCommentsDto) {
+        return this.commentsService.updateComment(body, commentId);
     }
 }
