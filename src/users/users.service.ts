@@ -74,7 +74,7 @@ export class UsersService {
         return true;
     }
 
-    async getFollowers(userId: number): Promise<UsersModel[]> {
+    async getFollowers(userId: number, includeNotConfirmed: boolean) {
         // find하면 배열로나옴
         /**
          * [
@@ -88,18 +88,64 @@ export class UsersService {
          *  }
          * ]
          */
-        const result = await this.userFollowersRepository.find({
-            where: {
-                followee: {
-                    id: userId,
-                },
+
+        const where = {
+            followee: {
+                id: userId,
             },
+        };
+
+        if (!includeNotConfirmed) {
+            where["isConfirmed"] = true;
+        }
+
+        // where = { followee: { id: userId }, isConfirmed: true }
+
+        const result = await this.userFollowersRepository.find({
+            where: where,
             relations: {
                 follower: true,
                 followee: true,
             },
         });
 
-        return result.map((x) => x.follower);
+        return result.map((x) => ({
+            id: x.follower.id,
+            nickname: x.follower.nickname,
+            email: x.follower.email,
+            isConfirmed: x.isConfirmed,
+        }));
+    }
+
+    async confirmFollow(followerId: number, followeeId: number) {
+        // followerId, followeeId로 중간테이블에 데이터가 있는지 확인
+        const existing = await this.userFollowersRepository.findOne({
+            where: {
+                followee: {
+                    id: followeeId,
+                },
+                follower: {
+                    id: followerId,
+                },
+            },
+
+            relations: {
+                follower: true,
+                followee: true,
+            },
+        });
+
+        if (!existing) {
+            throw new BadRequestException("존재하지 않는 팔로우 요청입니다.");
+        }
+
+        // save할때 id값만 넣으면, 변경된 부분만 업데이트
+        // console.log(...existing);
+        await this.userFollowersRepository.save({
+            ...existing,
+            isConfirmed: true,
+        });
+
+        return true;
     }
 }
