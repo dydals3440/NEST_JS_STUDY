@@ -13,7 +13,7 @@ import { UsersModel } from "src/users/entity/users.entity";
 import { Request } from "express";
 
 @Injectable()
-export class IsPostMineOrAdmin implements CanActivate {
+export class IsPostMineOrAdminGuard implements CanActivate {
     constructor(private readonly postsService: PostsService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {

@@ -32,7 +32,7 @@ import { ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { Roles } from "src/users/decorator/roles.decorator";
 import { RolesEnum } from "src/users/const/roles.const";
 import { IsPublic } from "src/common/decorator/is-public.decorator";
-import { IsPostMineOrAdmin } from "./guard/is-post-mine-or-admin.guard";
+import { IsPostMineOrAdminGuard } from "./guard/is-post-mine-or-admin.guard";
 
 // Controller Annotation
 @Controller("posts")
@@ -142,7 +142,7 @@ export class PostsController {
 
     // 가드에서 받는 params하고 이름을 맞춰줘야함 id -> postId
     @Patch(":postId")
-    @UseGuards(IsPostMineOrAdmin)
+    @UseGuards(IsPostMineOrAdminGuard)
     patchPost(
         @Param("postId", ParseIntPipe) id: number,
         @Body() body: UpdatePostDto,

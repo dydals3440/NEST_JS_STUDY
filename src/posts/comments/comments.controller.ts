@@ -7,6 +7,7 @@ import { User } from "src/users/decorator/user.decorator";
 import { UsersModel } from "src/users/entity/users.entity";
 import { UpdateCommentsDto } from "./dto/update-domments.dto";
 import { IsPublic } from "src/common/decorator/is-public.decorator";
+import { IsCommentMineOrAdminGuard } from "./guard/is-comment-mine-or-admin.guard";
 
 // 항상 특정 포스트에 귀속이 되므로
 // 댓글작업은 항상 postId가 필요한 작업임 postId가 없으면 BadRequest
@@ -64,6 +65,7 @@ export class CommentsController {
     }
 
     @Delete(":commentId")
+    @UseGuards(IsCommentMineOrAdminGuard)
     async deleteComment(@Param("commentId", ParseIntPipe) commentId: number) {
         return this.commentsService.deleteComment(commentId);
     }
