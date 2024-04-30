@@ -151,10 +151,11 @@ export class AuthService {
         });
     }
 
-    loginUser(user: Pick<UsersModel, "email" | "id">) {
+    async loginUser(user: Pick<UsersModel, "email" | "id">) {
         return {
             accessToken: this.signToken(user, false),
             refreshToken: this.signToken(user, true),
+            user: await this.usersService.getUserByEmail(user.email),
         };
     }
 

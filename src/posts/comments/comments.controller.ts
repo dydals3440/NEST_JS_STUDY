@@ -1,5 +1,6 @@
-import { Controller } from "@nestjs/common";
+import { Controller, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { CommentsService } from "./comments.service";
+import { PaginateCommentsDto } from "./dto/paginate-comments.dto";
 
 // 항상 특정 포스트에 귀속이 되므로
 @Controller("posts/:postId/comments")
@@ -22,5 +23,15 @@ export class CommentsController {
          * 5) PATCH(':commentId') 특정 comment 업데이트 하는 기능
          * 6) DELETE (':commentId) 특정 comment 삭제하는 기능
          */
+    }
+
+    @Get()
+    getComments(@Param("postId", ParseIntPipe) postId: number, @Query() query: PaginateCommentsDto) {
+        return this.commentsService.PaginateCommentsDto(query, postId);
+    }
+
+    @Get(":commentId")
+    getComment(@Param("commentId", ParseIntPipe) commentId: number) {
+        return this.commentsService.getCommentById(commentId);
     }
 }
