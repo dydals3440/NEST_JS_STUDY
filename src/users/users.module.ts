@@ -3,10 +3,10 @@ import { UsersService } from "./users.service";
 import { UsersController } from "./users.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsersModel } from "./entity/users.entity";
+import { UserFollowersModel } from "./entity/user-followers.entity";
 
 @Module({
-    // Service에서 Repository를 사용할려면 module에 import해주어야함.
-    imports: [TypeOrmModule.forFeature([UsersModel])],
+    imports: [TypeOrmModule.forFeature([UsersModel, UserFollowersModel])],
     exports: [UsersService],
     controllers: [UsersController],
     providers: [UsersService],

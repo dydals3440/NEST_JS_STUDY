@@ -10,6 +10,7 @@ import { Exclude, Expose } from "class-transformer";
 import { ChatsModel } from "src/chats/entity/chats.entity";
 import { MessagesModel } from "src/chats/messages/entity/messages.entity";
 import { CommentsModel } from "src/posts/comments/entity/comments.entity";
+import { UserFollowersModel } from "./user-followers.entity";
 
 /**
  * id: number
@@ -107,13 +108,14 @@ export class UsersModel extends BaseModel {
     @OneToMany(() => CommentsModel, (comment) => comment.author)
     postComments: CommentsModel[];
 
+    // Entity 하나로 다대다 구축가능
     // 내가 팔로우 하고 있는 사람
     // 여러명의 팔로워들이 있을 수 있으니 []
-    @ManyToMany(() => UsersModel, (user) => user.followees)
-    @JoinTable()
-    followers: UsersModel[];
+    @OneToMany(() => UserFollowersModel, (ufm) => ufm.follower)
+    followers: UserFollowersModel[];
 
     // 팔로워 당하고 있는 사람들. (나를 팔로우하는사람)
-    @ManyToMany(() => UsersModel, (user) => user.followers)
-    followees: UsersModel[];
+
+    @OneToMany(() => UserFollowersModel, (ufm) => ufm.followee)
+    followees: UserFollowersModel[];
 }

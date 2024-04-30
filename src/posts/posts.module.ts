@@ -31,13 +31,13 @@ import { LogMiddleware } from "src/common/middleware/log.middleware";
 @Module({
     imports: [
         JwtModule.register({}),
-        TypeOrmModule.forFeature([PostsModel, UsersModel, ImageModel]),
+        TypeOrmModule.forFeature([PostsModel, ImageModel]),
         AuthModule,
         UsersModule,
         CommonModule,
     ],
     controllers: [PostsController],
-    providers: [PostsService, AuthService, UsersService, PostsImagesService],
+    providers: [PostsService, PostsImagesService],
     exports: [PostsService],
 })
 // PostsService는 PostsModule안에 provider로 등록되어있음.

@@ -28,6 +28,7 @@ import { CommentsModule } from "./posts/comments/comments.module";
 import { CommentsModel } from "./posts/comments/entity/comments.entity";
 import { RolesGuard } from "./users/guard/roles.guard";
 import { AccessTokenGuard } from "./auth/guard/bearer-token.guard";
+import { UserFollowersModel } from "./users/entity/user-followers.entity";
 
 @Module({
     // 다른 모듈을 불러올 떄 사용
@@ -57,7 +58,15 @@ import { AccessTokenGuard } from "./auth/guard/bearer-token.guard";
             username: process.env[ENV_DB_USERNAME_KEY],
             password: process.env[ENV_DB_PASSWORD_KEY],
             database: process.env[ENV_DB_DATABASE_KEY],
-            entities: [PostsModel, UsersModel, ImageModel, ChatsModel, MessagesModel, CommentsModel],
+            entities: [
+                PostsModel,
+                UsersModel,
+                ImageModel,
+                ChatsModel,
+                MessagesModel,
+                CommentsModel,
+                UserFollowersModel,
+            ],
             // nestjs에서 작성하는 typeorm코드와 DB 싱크를 자동으로 맞출꺼나.(개발환경에서는 true / production 환경에서는 마음대로 바뀔 수 있기에 false로 자동싱크맞추기 안하게)
             synchronize: true,
         }),
