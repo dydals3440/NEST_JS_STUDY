@@ -2,6 +2,7 @@ import {
     ClassSerializerInterceptor,
     Controller,
     DefaultValuePipe,
+    Delete,
     Get,
     Param,
     ParseBoolPipe,
@@ -68,6 +69,17 @@ export class UsersController {
         @Param("id", ParseIntPipe) followerId: number,
     ) {
         await this.usersService.confirmFollow(followerId, user.id);
+
+        return true;
+    }
+
+    @Delete("follow/:id")
+    async deleteFollow(
+        @User() user: UsersModel,
+        // 내가 팔로우하려는 상대를 취소 (상대가 나를 팔로우하는 것을 취소할 수 없음 이는 차단임.)
+        @Param("id", ParseIntPipe) followeeId: number,
+    ) {
+        await this.usersService.deleteFollow(user.id, followeeId);
 
         return true;
     }
