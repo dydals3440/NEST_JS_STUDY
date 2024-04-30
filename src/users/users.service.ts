@@ -56,4 +56,43 @@ export class UsersService {
             },
         });
     }
+
+    // follow
+    async followUser(followerId: number, followeeId: number) {
+        const user = await this.usersRepository.findOne({
+            where: {
+                id: followerId,
+            },
+            relations: {
+                followees: true,
+            },
+        });
+
+        if (!user) {
+            throw new BadRequestException("존재하지 않는 팔로워입니다.");
+        }
+
+        await this.usersRepository.save({
+            ...user,
+            followees: [
+                ...user.followees,
+                {
+                    id: followeeId,
+                },
+            ],
+        });
+    }
+
+    async getFollowers(userId: number): Promise<UsersModel[]> {
+        const user = await this.usersRepository.findOne({
+            where: {
+                id: userId,
+            },
+            relations: {
+                followers: true,
+            },
+        });
+
+        return user.followers;
+    }
 }

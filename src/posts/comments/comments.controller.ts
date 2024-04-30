@@ -58,7 +58,7 @@ export class CommentsController {
     }
 
     @Patch(":commentId")
-    // accesstoken이 있기만하면,어떤 코멘트든 변경이 가능하다 라는 로직이 됨. 이거는 나중에 Rollbased access controll, authorization 관련 가드 만들떄 알아봄.
+    // accesstoken이 있기만하면,어떤 코멘트든 변경이 가능하다 라는 로직이 됨. 이거는 나중에 Rollbased access control, authorization 관련 가드 만들떄 알아봄.
     // @UseGuards(AccessTokenGuard)
     async patchComment(@Param("commentId", ParseIntPipe) commentId: number, @Body() body: UpdateCommentsDto) {
         return this.commentsService.updateComment(body, commentId);

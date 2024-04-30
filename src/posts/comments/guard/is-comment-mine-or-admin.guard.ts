@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Request } from "express";
-import { Observable } from "rxjs";
+
 import { RolesEnum } from "src/users/const/roles.const";
 import { UsersModel } from "src/users/entity/users.entity";
 import { CommentsService } from "../comments.service";
