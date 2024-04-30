@@ -6,6 +6,7 @@ import { CreateCommentsDto } from "./dto/create-comments.dto";
 import { User } from "src/users/decorator/user.decorator";
 import { UsersModel } from "src/users/entity/users.entity";
 import { UpdateCommentsDto } from "./dto/update-domments.dto";
+import { IsPublic } from "src/common/decorator/is-public.decorator";
 
 // 항상 특정 포스트에 귀속이 되므로
 // 댓글작업은 항상 postId가 필요한 작업임 postId가 없으면 BadRequest
@@ -33,17 +34,18 @@ export class CommentsController {
     }
 
     @Get()
+    @IsPublic()
     getComments(@Param("postId", ParseIntPipe) postId: number, @Query() query: PaginateCommentsDto) {
         return this.commentsService.paginateComments(query, postId);
     }
 
     @Get(":commentId")
+    @IsPublic()
     getComment(@Param("commentId", ParseIntPipe) commentId: number) {
         return this.commentsService.getCommentById(commentId);
     }
 
     @Post()
-    @UseGuards(AccessTokenGuard)
     postComment(
         // 어떤, 포스트에다가 코멘트를 달았는지 알아야하기에
         // 컨트롤러에 :postId라 했으므로 이걸 맞춰줘야함.
@@ -56,13 +58,12 @@ export class CommentsController {
 
     @Patch(":commentId")
     // accesstoken이 있기만하면,어떤 코멘트든 변경이 가능하다 라는 로직이 됨. 이거는 나중에 Rollbased access controll, authorization 관련 가드 만들떄 알아봄.
-    @UseGuards(AccessTokenGuard)
+    // @UseGuards(AccessTokenGuard)
     async patchComment(@Param("commentId", ParseIntPipe) commentId: number, @Body() body: UpdateCommentsDto) {
         return this.commentsService.updateComment(body, commentId);
     }
 
     @Delete(":commentId")
-    @UseGuards(AccessTokenGuard)
     async deleteComment(@Param("commentId", ParseIntPipe) commentId: number) {
         return this.commentsService.deleteComment(commentId);
     }

@@ -76,8 +76,7 @@ export class PostsController {
     @ApiOperation({ summary: "Get 100 random posts.", description: "100개의 랜덤한 포스트를 생성합니다." })
     @ApiResponse({ status: 200, description: "성공" })
     @Post("random")
-    @ApiBearerAuth("access-token")
-    @UseGuards(AccessTokenGuard)
+    // @ApiBearerAuth("access-token")
     async postPostsRandom(@User() user: UsersModel) {
         await this.postsService.generatePosts(user.id);
 
@@ -113,7 +112,6 @@ export class PostsController {
     // commit -> 저장
     // rollback -> 원상복구
     @Post()
-    @UseGuards(AccessTokenGuard)
     @UseInterceptors(TransactionInterceptor)
     async postPost(@User("id") userId: number, @Body() body: CreatePostDto, @QueryRunner() qr: QR) {
         // temp -> posts로 옮긴다음에 포스팅
