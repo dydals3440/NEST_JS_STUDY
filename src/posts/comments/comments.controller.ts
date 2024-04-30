@@ -1,6 +1,10 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from "@nestjs/common";
 import { CommentsService } from "./comments.service";
 import { PaginateCommentsDto } from "./dto/paginate-comments.dto";
+import { AccessTokenGuard } from "src/auth/guard/bearer-token.guard";
+import { CreateCommentsDto } from "./dto/create-comments.dto";
+import { User } from "src/users/decorator/user.decorator";
+import { UsersModel } from "src/users/entity/users.entity";
 
 // 항상 특정 포스트에 귀속이 되므로
 @Controller("posts/:postId/comments")
@@ -27,11 +31,23 @@ export class CommentsController {
 
     @Get()
     getComments(@Param("postId", ParseIntPipe) postId: number, @Query() query: PaginateCommentsDto) {
-        return this.commentsService.PaginateCommentsDto(query, postId);
+        return this.commentsService.paginateComments(query, postId);
     }
 
     @Get(":commentId")
     getComment(@Param("commentId", ParseIntPipe) commentId: number) {
         return this.commentsService.getCommentById(commentId);
+    }
+
+    @Post()
+    @UseGuards(AccessTokenGuard)
+    postComment(
+        // 어떤, 포스트에다가 코멘트를 달았는지 알아야하기에
+        // 컨트롤러에 :postId라 했으므로 이걸 맞춰줘야함.
+        @Param("postId", ParseIntPipe) pid: number,
+        @Body() body: CreateCommentsDto,
+        @User() user: UsersModel,
+    ) {
+        return this.commentsService.createComment(body, pid, user);
     }
 }

@@ -1,9 +1,12 @@
+import { DEFAULT_COMMENT_FIND_OPTIONS } from "./const/default-comment-find-option.const";
 import { PaginateCommentsDto } from "./dto/paginate-comments.dto";
 import { CommonService } from "src/common/common.service";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CommentsModel } from "./entity/comments.entity";
 import { Repository } from "typeorm";
+import { CreateCommentsDto } from "./dto/create-comments.dto";
+import { UsersModel } from "src/users/entity/users.entity";
 
 @Injectable()
 export class CommentsService {
@@ -13,7 +16,7 @@ export class CommentsService {
         private readonly CommonService: CommonService,
     ) {}
 
-    PaginateCommentsDto(dto: PaginateCommentsDto, postId: number) {
+    paginateComments(dto: PaginateCommentsDto, postId: number) {
         return this.CommonService.paginate(
             dto,
             this.commentsRepository,
@@ -24,6 +27,7 @@ export class CommentsService {
                         id: postId,
                     },
                 },
+                ...DEFAULT_COMMENT_FIND_OPTIONS,
             },
             `posts/${postId}/comments`,
         );
@@ -34,6 +38,7 @@ export class CommentsService {
             where: {
                 id,
             },
+            ...DEFAULT_COMMENT_FIND_OPTIONS,
         });
 
         if (!comment) {
@@ -41,5 +46,15 @@ export class CommentsService {
         }
 
         return comment;
+    }
+
+    async createComment(dto: CreateCommentsDto, postId: number, author: UsersModel) {
+        return this.commentsRepository.save({
+            ...dto,
+            post: {
+                id: postId,
+            },
+            author,
+        });
     }
 }

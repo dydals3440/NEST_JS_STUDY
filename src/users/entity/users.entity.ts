@@ -44,10 +44,10 @@ export class UsersModel extends BaseModel {
 
     // 위에를 보여주고 싶으면 exclude annotation 반대인 expose를 사용
     // getter를 만듬. 닉네임과 이메일을 조합한 , 존재하지 않은 프로퍼티를 expose할 수 있음.
-    @Expose()
-    get nicknameAndEmail() {
-        return this.nickname + "/" + this.email;
-    }
+    // @Expose()
+    // get nicknameAndEmail() {
+    //     return this.nickname + "/" + this.email;
+    // }
 
     @Column({
         unique: true,
