@@ -12,7 +12,7 @@ export class RolesGuard implements CanActivate {
          * reflector (nest.js IOC 컨테이너에서 자동 주입 받을 수 있음.)
          * getAllAndOverride() 기능: ROLES_KEY
          */
-        const requiredRole = this.reflector.getAllAndOverride(ROLES_KEY, [context.getHandler, context.getClass]);
+        const requiredRole = this.reflector.getAllAndOverride(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
         // Roles Annotation이 등록 안돼있음.
         if (!requiredRole) {

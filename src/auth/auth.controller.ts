@@ -4,12 +4,14 @@ import { BasicTokenGuard } from "./guard/basic-token.guard";
 import { RefreshTokenGuard } from "./guard/bearer-token.guard";
 import { RegisterUserDto } from "./dto/register-user.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { IsPublic } from "src/common/decorator/is-public.decorator";
 
 @Controller("auth")
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post("token/access")
+    @IsPublic()
     // AccessToken도 RefreshTokenGuard가 적용되어야함.
     @UseGuards(RefreshTokenGuard)
     postTokenAccess(@Headers("authorization") rawToken: string) {
@@ -27,6 +29,7 @@ export class AuthController {
     }
 
     @Post("token/refresh")
+    @IsPublic()
     @UseGuards(RefreshTokenGuard)
     postTokenRefresh(@Headers("authorization") rawToken: string) {
         const token = this.authService.extractTokenFromHeader(rawToken, true);
@@ -45,6 +48,7 @@ export class AuthController {
 
     // POST auth/login/email
     @Post("login/email")
+    @IsPublic()
     @UseGuards(BasicTokenGuard)
     // authorization 기준으로 rawToken을 받아옴.
     postLoginEmail(@Headers("authorization") rawToken: string) {
@@ -63,6 +67,7 @@ export class AuthController {
     // POST auth/register/email
     @ApiOperation({ summary: "Sign Up.", description: "회원가입을 합니다." })
     @ApiResponse({ status: 200, description: "회원가입 성공" })
+    @IsPublic()
     @Post("register/email")
     postRegisterEmail(@Body() body: RegisterUserDto) {
         return this.authService.registerWithEmail(body);

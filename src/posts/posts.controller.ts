@@ -5,14 +5,11 @@ import {
     Controller,
     Delete,
     Get,
-    InternalServerErrorException,
     Param,
     ParseIntPipe,
     Patch,
     Post,
     Query,
-    UploadedFile,
-    UseFilters,
     UseGuards,
     UseInterceptors,
 } from "@nestjs/common";
@@ -30,10 +27,11 @@ import { DataSource, QueryRunner as QR } from "typeorm";
 import { LogInterceptor } from "src/common/interceptor/log.interceptor";
 import { TransactionInterceptor } from "src/common/interceptor/transaction.interceptor";
 import { QueryRunner } from "src/common/decorator/query-runner.decorator";
-import { HttpExceptionFilter } from "src/common/exception-filter/http.exception-filter";
-import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiProperty, ApiQuery, ApiBearerAuth } from "@nestjs/swagger";
+
+import { ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { Roles } from "src/users/decorator/roles.decorator";
 import { RolesEnum } from "src/users/const/roles.const";
+import { IsPublic } from "src/common/decorator/is-public.decorator";
 
 // Controller Annotation
 @Controller("posts")
@@ -52,6 +50,7 @@ export class PostsController {
     // 1) GET /posts
     //  모든 posts를 다 가져온다.
     @Get()
+    @IsPublic()
     @ApiOperation({
         summary: "Get All Posts.",
         description:
@@ -90,6 +89,7 @@ export class PostsController {
     @ApiOperation({ summary: "Get detail post.", description: "id에 해당하는 포스트 세부정부를 가져옵니다." })
     @ApiResponse({ status: 200, description: "성공" })
     @ApiResponse({ status: 404, description: "Not Found" })
+    @IsPublic()
     @Get(":id")
     getPost(@Param("id", ParseIntPipe) id: number) {
         return this.postsService.getPostById(id);

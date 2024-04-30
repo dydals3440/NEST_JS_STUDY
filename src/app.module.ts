@@ -27,6 +27,7 @@ import { MessagesModel } from "./chats/messages/entity/messages.entity";
 import { CommentsModule } from "./posts/comments/comments.module";
 import { CommentsModel } from "./posts/comments/entity/comments.entity";
 import { RolesGuard } from "./users/guard/roles.guard";
+import { AccessTokenGuard } from "./auth/guard/bearer-token.guard";
 
 @Module({
     // 다른 모듈을 불러올 떄 사용
@@ -72,6 +73,11 @@ import { RolesGuard } from "./users/guard/roles.guard";
         {
             provide: APP_INTERCEPTOR,
             useClass: ClassSerializerInterceptor,
+        },
+        // 기본값을 private route로
+        {
+            provide: APP_GUARD,
+            useClass: AccessTokenGuard,
         },
         {
             provide: APP_GUARD,
