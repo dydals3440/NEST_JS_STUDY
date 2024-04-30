@@ -300,4 +300,20 @@ export class PostsService {
             where: { id },
         });
     }
+
+    // 내 포스트인지 아닌지 확인 (IsPostMine guard)
+    async isPostMine(userId: number, postId: number) {
+        // true시 로그인한 사용자의 소유가 맞음.
+        return this.postsRepository.exists({
+            where: {
+                id: postId,
+                author: {
+                    id: userId,
+                },
+            },
+            relations: {
+                author: true,
+            },
+        });
+    }
 }
