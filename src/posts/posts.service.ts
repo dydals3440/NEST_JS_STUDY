@@ -293,4 +293,11 @@ export class PostsService {
 
         return postId;
     }
+
+    // 이 Id를 갖고있는 포스트가 존재하는지 확인하는 것.
+    async checkPostExistsById(id: number) {
+        return this.postsRepository.exists({
+            where: { id },
+        });
+    }
 }

@@ -8,6 +8,7 @@ import { UsersModel } from "src/users/entity/users.entity";
 import { UpdateCommentsDto } from "./dto/update-domments.dto";
 
 // 항상 특정 포스트에 귀속이 되므로
+// 댓글작업은 항상 postId가 필요한 작업임 postId가 없으면 BadRequest
 @Controller("posts/:postId/comments")
 export class CommentsController {
     constructor(private readonly commentsService: CommentsService) {
