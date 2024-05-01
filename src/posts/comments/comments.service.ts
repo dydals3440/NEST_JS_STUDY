@@ -4,7 +4,7 @@ import { CommonService } from "src/common/common.service";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CommentsModel } from "./entity/comments.entity";
-import { Repository } from "typeorm";
+import { QueryRunner, Repository } from "typeorm";
 import { CreateCommentsDto } from "./dto/create-comments.dto";
 import { UsersModel } from "src/users/entity/users.entity";
 import { UpdateCommentsDto } from "./dto/update-domments.dto";
@@ -16,6 +16,10 @@ export class CommentsService {
         private readonly commentsRepository: Repository<CommentsModel>,
         private readonly CommonService: CommonService,
     ) {}
+
+    getRepository(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<CommentsModel>(CommentsModel) : this.commentsRepository;
+    }
 
     paginateComments(dto: PaginateCommentsDto, postId: number) {
         return this.CommonService.paginate(
@@ -49,8 +53,9 @@ export class CommentsService {
         return comment;
     }
 
-    async createComment(dto: CreateCommentsDto, postId: number, author: UsersModel) {
-        return this.commentsRepository.save({
+    async createComment(dto: CreateCommentsDto, postId: number, author: UsersModel, qr?: QueryRunner) {
+        const repository = this.getRepository(qr);
+        return repository.save({
             ...dto,
             post: {
                 id: postId,
@@ -75,14 +80,16 @@ export class CommentsService {
         return newComment;
     }
 
-    async deleteComment(id: number) {
-        const comment = await this.commentsRepository.findOne({ where: { id } });
+    async deleteComment(id: number, qr?: QueryRunner) {
+        const repository = this.getRepository(qr);
+
+        const comment = await repository.findOne({ where: { id } });
 
         if (!comment) {
             throw new BadRequestException("존재하지 않는 댓글입니다.");
         }
 
-        await this.commentsRepository.delete(id);
+        await repository.delete(id);
 
         return id;
     }

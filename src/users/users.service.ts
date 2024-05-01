@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UsersModel } from "./entity/users.entity";
-import { Repository } from "typeorm";
+import { QueryRunner, Repository } from "typeorm";
 import { UserFollowersModel } from "./entity/user-followers.entity";
 
 @Injectable()
@@ -12,6 +12,14 @@ export class UsersService {
         @InjectRepository(UserFollowersModel)
         private readonly userFollowersRepository: Repository<UserFollowersModel>,
     ) {}
+
+    getUsersRepository(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<UsersModel>(UsersModel) : this.usersRepository;
+    }
+
+    getUserFollowRepository(qr?: QueryRunner) {
+        return qr ? qr.manager.getRepository<UserFollowersModel>(UserFollowersModel) : this.userFollowersRepository;
+    }
 
     async createUser(user: Pick<UsersModel, "email" | "nickname" | "password">) {
         // 1) 닉네임 중복이 없는지 확인
@@ -61,8 +69,10 @@ export class UsersService {
     }
 
     // follow
-    async followUser(followerId: number, followeeId: number) {
-        const result = await this.userFollowersRepository.save({
+    async followUser(followerId: number, followeeId: number, qr?: QueryRunner) {
+        const userFollowersRepository = this.getUserFollowRepository(qr);
+
+        await userFollowersRepository.save({
             follower: {
                 id: followerId,
             },
@@ -117,9 +127,10 @@ export class UsersService {
         }));
     }
 
-    async confirmFollow(followerId: number, followeeId: number) {
+    async confirmFollow(followerId: number, followeeId: number, qr?: QueryRunner) {
+        const userFollowersRepository = this.getUserFollowRepository(qr);
         // followerId, followeeId로 중간테이블에 데이터가 있는지 확인
-        const existing = await this.userFollowersRepository.findOne({
+        const existing = await userFollowersRepository.findOne({
             where: {
                 followee: {
                     id: followeeId,
@@ -141,7 +152,7 @@ export class UsersService {
 
         // save할때 id값만 넣으면, 변경된 부분만 업데이트
         // console.log(...existing);
-        await this.userFollowersRepository.save({
+        await userFollowersRepository.save({
             ...existing,
             isConfirmed: true,
         });
@@ -149,8 +160,10 @@ export class UsersService {
         return true;
     }
 
-    async deleteFollow(followerId: number, followeeId: number) {
-        await this.userFollowersRepository.delete({
+    async deleteFollow(followerId: number, followeeId: number, qr?: QueryRunner) {
+        const userFollowersRepository = this.getUserFollowRepository(qr);
+
+        await userFollowersRepository.delete({
             follower: {
                 id: followerId,
             },
@@ -160,5 +173,53 @@ export class UsersService {
         });
 
         return true;
+    }
+
+    async incrementFollowerCount(userId: number, qr?: QueryRunner) {
+        const userRepository = this.getUsersRepository(qr);
+
+        await userRepository.increment(
+            {
+                id: userId,
+            },
+            "followerCount",
+            1,
+        );
+    }
+
+    async decrementFollowerCount(userId: number, qr?: QueryRunner) {
+        const userRepository = this.getUsersRepository(qr);
+
+        await userRepository.decrement(
+            {
+                id: userId,
+            },
+            "followerCount",
+            1,
+        );
+    }
+
+    async incrementFolloweeCount(userId: number, qr?: QueryRunner) {
+        const userRepository = this.getUsersRepository(qr);
+
+        await userRepository.increment(
+            {
+                id: userId,
+            },
+            "followeeCount",
+            1,
+        );
+    }
+
+    async decrementFolloweeCount(userId: number, qr?: QueryRunner) {
+        const userRepository = this.getUsersRepository(qr);
+
+        await userRepository.decrement(
+            {
+                id: userId,
+            },
+            "followeeCount",
+            1,
+        );
     }
 }

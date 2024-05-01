@@ -115,7 +115,16 @@ export class UsersModel extends BaseModel {
     followers: UserFollowersModel[];
 
     // 팔로워 당하고 있는 사람들. (나를 팔로우하는사람)
-
     @OneToMany(() => UserFollowersModel, (ufm) => ufm.followee)
     followees: UserFollowersModel[];
+
+    @Column({
+        default: 0,
+    })
+    followerCount: number;
+
+    @Column({
+        default: 0,
+    })
+    followeeCount: number;
 }

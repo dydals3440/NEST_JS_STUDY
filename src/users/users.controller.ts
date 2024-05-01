@@ -17,6 +17,9 @@ import { Roles } from "./decorator/roles.decorator";
 import { RolesEnum } from "./const/roles.const";
 import { User } from "./decorator/user.decorator";
 import { UsersModel } from "./entity/users.entity";
+import { TransactionInterceptor } from "src/common/interceptor/transaction.interceptor";
+import { QueryRunner as QR } from "typeorm";
+import { QueryRunner } from "src/common/decorator/query-runner.decorator";
 
 @Controller("users")
 export class UsersController {
@@ -63,23 +66,34 @@ export class UsersController {
 
     // 나를 팔로우 할려는 상대의 아이디
     @Patch("follow/:id/confirm")
+    @UseInterceptors(TransactionInterceptor)
     async patchFollowConfirm(
         @User() user: UsersModel,
-        //
         @Param("id", ParseIntPipe) followerId: number,
+        @QueryRunner() qr: QR,
     ) {
-        await this.usersService.confirmFollow(followerId, user.id);
+        await this.usersService.confirmFollow(followerId, user.id, qr);
+
+        await this.usersService.incrementFollowerCount(user.id, qr);
+
+        await this.usersService.incrementFolloweeCount(followerId, qr);
 
         return true;
     }
 
     @Delete("follow/:id")
+    @UseInterceptors(TransactionInterceptor)
     async deleteFollow(
         @User() user: UsersModel,
         // 내가 팔로우하려는 상대를 취소 (상대가 나를 팔로우하는 것을 취소할 수 없음 이는 차단임.)
         @Param("id", ParseIntPipe) followeeId: number,
+        @QueryRunner() qr: QR,
     ) {
-        await this.usersService.deleteFollow(user.id, followeeId);
+        await this.usersService.deleteFollow(user.id, followeeId, qr);
+
+        await this.usersService.decrementFollowerCount(followeeId, qr);
+
+        await this.usersService.decrementFolloweeCount(user.id, qr);
 
         return true;
     }
